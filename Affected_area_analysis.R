@@ -116,7 +116,7 @@ lc.for.mask[is.nan(lc.mask)] <- 0
 lc.for.mask[lc.mask==2] <- 1
 
 # search lai files/dates for the working year
-lai.files.yr <- list.files(path=paste(wrk.dir,"/LAI_DATA/",sep=""), pattern=paste(as.character(wrk.yr[iyr])) ) 
+lai.files.yr <- list.files(path=paste(wrk.dir,"/LAI_DATA/",sep=""), pattern=paste("c_gls_LAI_",as.character(wrk.yr[iyr]),sep="") ) 
 wrk.date <- substr(lai.files.yr,start=11,stop=20)
 #
 
@@ -193,7 +193,7 @@ if ( tc.pixels > 1000   ){
 
 # save the tc.occ.avg array for each run
 
-save(tc.occ.avg, file= paste(runs[irun,1],runs[irun,2],runs[irun,3],runs[irun,4],yr.st,yr.nd,".rda",sep="_"))  
+save(tc.occ.avg, file= paste(runs[irun,1],runs[irun,2],runs[irun,3],yr.st,yr.nd,".rda",sep="_"))  
 
 
 } #end of run-case-loop

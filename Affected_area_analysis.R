@@ -62,16 +62,17 @@ runs[11,] <- c("4D",5,120)
 runs[12,] <- c("5D",5,160)
 
 
-for (irun in 1:4 ) {
+for (irun in 9:12 ) {
+
+# set up the working years
+yr.st <- 1999 
+yr.nd <- 2018
+nyrs <- (yr.nd-yr.st)+1 
+wrk.yr <- seq(yr.st, yr.nd, 1)
 
 #decleare TC occurency array
 tc.occ.avg <- array(0, dim=c(6722,6722,nyrs))  
 
-# set up the working years
-yr.st <- 2018 
-yr.nd <- 2018
-nyrs <- (yr.nd-yr.st)+1 
-wrk.yr <- seq(yr.st, yr.nd, 1)
 
 # load libraries and  TC_track data from the selected year 
 library("plyr")
@@ -130,6 +131,9 @@ tc.mask$tc_pot[tc.mask$tc_pot>=1] <- 1
 tc.mask$tc_pot[tc.mask$tc_pot!=1] <- 0
 tc.mask$tc_pot[is.na(tc.mask$tc_pot)] <- 0
 
+nx <- length(tc.mask$lon) 
+ny <- length(tc.mask$lat)
+ 
 
 
 tc.pixels <- length(which((tc.mask$tc_pot>=1)))
@@ -168,22 +172,20 @@ if ( tc.pixels > 1000   ){
  tc.occ.avg[,,iyr] <- tc.occ.avg[,,iyr] * lc.for.mask 
 
  #output the plot for annual TC Occueance
- nx <- length(tc.acf$lon) 
- ny <- length(tc.acf$lat)
  tc.occ.yr <- array(0,dim=c(nx,ny))
  tc.occ.yr <- raster( x=t(tc.occ.avg[,,iyr]), 
 			     xmn=tc.acf$lon[1],  xmx=tc.acf$lon[nx],
 			     ymn=tc.acf$lat[ny], ymx=tc.acf$lat[1], 
 			     crs=CRS("+proj=longlat +datum=WGS84"))
  
- bitmap(file=paste("./",runs[irun,1],runs[irun,2],runs[irun,3],runs[irun,4],wrk.yr[iyr],".png",sep="_"),type="png16m",
-        width = 8, height = 8, units = "in", res= 600 )
+ bitmap(file=paste("./png_files/TC_frq",runs[irun,1],runs[irun,2],runs[irun,3],wrk.yr[iyr],".png",sep="_"),type="png16m",
+        width = 4, height = 4, units = "in", res= 300 )
  layout(matrix(data=seq(1,1,1),nrow=1, ncol=1, byrow=TRUE))
- plot(tc.occ.yr,main=paste("Annual TC Occurence:", wrk.yr[iyr],"for runs:",runs[irun,],sep="") )
+ plot(tc.occ.yr,main=paste("Annual TC Occurence:", wrk.yr[iyr],"for runs:",runs[irun,1],runs[irun,2],runs[irun,3],sep="_") )
  plot(coastlines,add=T)
  dev.off()
  # show in window
- plot(tc.occ.yr,main=paste("Annual TC Occurence:", wrk.yr[iyr],"for runs:",runs[irun,],sep="") )
+ plot(tc.occ.yr,main=paste("Annual TC Occurence:", wrk.yr[iyr],"for runs:",runs[irun,1],runs[irun,2],runs[irun,3],sep="_") )
  plot(coastlines,add=T)
 
  

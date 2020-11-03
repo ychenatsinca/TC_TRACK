@@ -4,65 +4,40 @@
 # First Date: 2020-11-02
 # Revised :
 
-#run.case <- c("1D")
-#factor <- as.numeric(substr(run.case, star=1, stop=1))  
+fun.tc.mask <- function (run_case=1)
+{
+# load the input argument for the case of irun   
+run_case <- run_case
+print( paste("run case id:",run_case) )
 
 # set working dir path
 wrk.dir <- c("/lfs/home/ychen/LAI_STUDY_EAsia/")
 
-
-
+source("./src_function_ychen_ncdf4.R")
 # function for reading the netCDF file
-fun_read_nc <- function(arg1) {
-  #load  ncdf library
-  #
-  library(ncdf4)
-  #arg1: filepath fo the nc file from James multilayer output
-  print(paste("arg1: for reading file path ;", arg1))
-  # open the read in file and copy the variables to the dataframe for analysis
-  input_nc <- nc_open(arg1)
-  #str(input <- nc)
-  #   print(i)
-  #
-  result <- list()
-  for (i in 1:input_nc$ndims ) {
-	      # store each  variable with respect of the dim <- name
-	      result[[input_nc$dim[[i]]$name]] <- input_nc$dim[[i]]$vals
-  }
-  #
-  for (i in 1:length(input_nc$var) ) {
-              # store each variable with respect of the var <- name
-              result[[input_nc$var[[i]]$name]] <- ncvar_get(input_nc,input_nc$var[[i]]$name)
-  }
-  nc_close(input_nc)
-  # show result structure
-  print(str(result))
-  # export the datatable
-  return(result)
-} #end of function
-  
+ 
 
 #setup the 12 possible cases
 
 runs <- array(0, dim=c(12,3))  
 #diameter, maximum wind, accumulative rainfall
-runs[1,] <- c("2D",8,60)
-runs[2,] <- c("3D",10,80)
-runs[3,] <- c("4D",12,100)
-runs[4,] <- c("5D",14,120)
+runs[1,] <- c("2D",10,60)
+runs[2,] <- c("3D",12,80)
+runs[3,] <- c("4D",14,100)
+runs[4,] <- c("5D",16,120)
 #
-runs[5,] <- c("2D",8,30)
-runs[6,] <- c("3D",10,30)
-runs[7,] <- c("4D",12,30)
-runs[8,] <- c("5D",14,30)
+runs[5,] <- c("2D",10,0)
+runs[6,] <- c("3D",12,0)
+runs[7,] <- c("4D",14,0)
+runs[8,] <- c("5D",16,0)
 #
-runs[9,]  <- c("2D",5,40)
-runs[10,] <- c("3D",5,80)
-runs[11,] <- c("4D",5,120)
-runs[12,] <- c("5D",5,160)
+runs[9,]  <- c("2D",0,60)
+runs[10,] <- c("3D",0,80)
+runs[11,] <- c("4D",0,100)
+runs[12,] <- c("5D",0,120)
 
 
-for (irun in 9:12 ) {
+for (irun in run_case:run_case ) {
 
 # set up the working years
 yr.st <- 1999 
@@ -155,8 +130,15 @@ if ( tc.pixels > 1000   ){
 
   #conditional critiria for determining the affected area 
   tmp.arr <- array(0,dim=c(nx,ny))
-  tmp.arr[ ((tc.acf$acc_rainf >=1)|(tc.mws$max_wind >=1)) & (tc.mask$tc_pot >= 1)  ] <- 1  
-  #calculate the tc occurance for 10 days
+  # wind only condition 
+  if ( as.numeric(runs[irun,2]) == 0. )  tmp.arr[ (tc.acf$acc_rainf >=1) & (tc.mask$tc_pot >= 1)  ] <- 1  
+  # rainfall only
+  if ( as.numeric(runs[irun,3]) == 0. )  tmp.arr[ (tc.mws$max_wind >=1) & (tc.mask$tc_pot >= 1)  ] <- 1   
+  #combine condition
+  if ( (as.numeric(runs[irun,3]) != 0.) & (as.numeric(runs[irun,2]) != 0.) ) {
+     tmp.arr[ ((tc.acf$acc_rainf >=1)|(tc.mws$max_wind >=1)) & (tc.mask$tc_pot >= 1)  ] <- 1  
+  } 
+ #calculate the tc occurance for 10 days
   tc.occ.avg[,,iyr] <- tmp.arr + tc.occ.avg[,,iyr]
 
 } else {
@@ -185,8 +167,8 @@ if ( tc.pixels > 1000   ){
  plot(coastlines,add=T)
  dev.off()
  # show in window
- plot(tc.occ.yr,main=paste("Annual TC Occurence:", wrk.yr[iyr],"for runs:",runs[irun,1],runs[irun,2],runs[irun,3],sep="_") )
- plot(coastlines,add=T)
+# plot(tc.occ.yr,main=paste("Annual TC Occurence:", wrk.yr[iyr],"for runs:",runs[irun,1],runs[irun,2],runs[irun,3],sep="_") )
+# plot(coastlines,add=T)
 
  
 } #end of  year-loop 
@@ -197,6 +179,20 @@ save(tc.occ.avg, file= paste(runs[irun,1],runs[irun,2],runs[irun,3],yr.st,yr.nd,
 
 
 } #end of run-case-loop
+
+
+}#end of function 
+#========== Set the script to Auto RUN=========================== 
+# Start convert the file by fun_compress with specific argunment
+# If you want to submit the file by queue to obelix, you need to apply the 
+# following lines, which allowed this R-script can be called under the shell script
+# with the arggunmets sending by specific batch jobs  
+#
+args<-commandArgs(TRUE)
+print(args)
+fun.tc.mask(args[1]) 
+#
+#========== End ================================================
 
 
 

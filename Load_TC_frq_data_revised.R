@@ -72,7 +72,28 @@ count.1999.to.2018.3d <- array( 0, dim=c(6722,6722))
 count.1999.to.2018.4d <- array( 0, dim=c(6722,6722)) 
 count.1999.to.2018.5d <- array( 0, dim=c(6722,6722)) 
 #count.1999.to.2019.7d <- array( 0, dim=c(6722,6722)) 
-load("2D_8_60_1999_2018_.rda")
+#load("2D_5_40_1999_2018_.rda")
+#load("2D_8_30_1999_2018_.rda")
+#load("2D_8_60_1999_2018_.rda")
+#load("3D_10_30_1999_2018_.rda")
+#load("3D_10_80_1999_2018_.rda")
+#load("3D_5_80_1999_2018_.rda")
+#load("4D_12_100_1999_2018_.rda")
+#load("4D_12_30_1999_2018_.rda")
+#load("4D_5_120_1999_2018_.rda")
+#load("5D_14_40_1999_2018_.rda")
+#load("5D_14_120_1999_2018_.rda")
+#load("5D_14_160_1999_2018_.rda")
+load("2D_10_0_1999_2018_.rda")
+
+
+
+
+
+
+
+
+
 #sum up all arraies in ann.land.frq 
 # sum up TC occurence 
 for ( it in yr.id ) { 
@@ -83,6 +104,7 @@ for ( it in yr.id ) {
 #count annual occurance of TC 
 tc.ave.occ.2d <- count.1999.to.2018.2d / as.numeric(length(yr.id))
 tc.ave.occ.2d[tc.ave.occ.2d<=0.1] <- 0
+tc.ave.occ.2d[tc.ave.occ.2d>=6.0] <- 6.0
 } #lf_ld_go
 
 #copy information to arr.for.plot 
@@ -197,8 +219,8 @@ if (obj.go) {
   #my.color<- rev(colorRampPalette(c(terrain.colors(27),"lightgray" ))(28))
   #my.breaks<- seq(1,100,length.out = 100)
  # my.color<- colorRampPalette(c("lightgray","orange","yellow","forestgreen","forestgreen"))(49)
-  my.color<- colorRampPalette(c("lightgray","blue","cyan","green","yellow","red","red"))(15)
-  my.breaks<- round(seq(0, 8.0, length.out = 15), digits=1)
+  my.color<- colorRampPalette(c("lightgray","blue","cyan","green","yellow","red","red"))(13)
+  my.breaks<- round(seq(0, 6.0, length.out = 13), digits=1)
   plot(land.frq.raster, ylim=c(0,60),xlim=c(90,150), legend=TRUE,
          col=my.color,breaks=my.breaks, 
        xlab="Longitude", ylab="Latitude", cex.lab=1.5, cex.main=2.0,

@@ -1,6 +1,6 @@
 # load TC return frequency data 
-# date : 2020-10-13
-#
+# first date : 2020-10-13
+# revised: 2020-11-06
 
 fun_read_nc <- function(arg1) {
   #load  ncdf library
@@ -55,78 +55,12 @@ library("maptools")
 library("raster")
 
 #load the coastlines data by readOGR function from sp package 
-coastlines <- readOGR("/lfs/home/ychen/GIS/Coastline/ne_110m_coastline/ne_110m_coastline.shp")
+#coastlines <- readOGR("/lfs/home/ychen/GIS/Coastline/ne_110m_coastline/ne_110m_coastline.shp")
+coastlines <- readOGR("/lfs/home/ychen/GIS/Coastline/ne_10m_coastline/ne_10m_coastline.shp")
 
 
-#  Totoal 75 years TC occurance data 
-
-
-# create idex of year
-
-ld_go <- T
-if (ld_go) {
-
-yr.id <- seq(1999, 2018,1) - 1999 + 1
-count.1999.to.2018.2d <- array( 0, dim=c(6722,6722)) 
-count.1999.to.2018.3d <- array( 0, dim=c(6722,6722)) 
-count.1999.to.2018.4d <- array( 0, dim=c(6722,6722)) 
-count.1999.to.2018.5d <- array( 0, dim=c(6722,6722)) 
-#count.1999.to.2019.7d <- array( 0, dim=c(6722,6722)) 
-#load("2D_5_40_1999_2018_.rda")
-#load("2D_8_30_1999_2018_.rda")
-#load("2D_8_60_1999_2018_.rda")
-#load("3D_10_30_1999_2018_.rda")
-#load("3D_10_80_1999_2018_.rda")
-#load("3D_5_80_1999_2018_.rda")
-#load("4D_12_100_1999_2018_.rda")
-#load("4D_12_30_1999_2018_.rda")
-#load("4D_5_120_1999_2018_.rda")
-#load("5D_14_40_1999_2018_.rda")
-#load("5D_14_120_1999_2018_.rda")
-#load("5D_14_160_1999_2018_.rda")
-load("2D_10_0_1999_2018_.rda")
-
-
-
-
-
-
-
-
-
-#sum up all arraies in ann.land.frq 
-# sum up TC occurence 
-for ( it in yr.id ) { 
- print(paste("working on year:",it+1999-1,"for 2D") )
-      count.1999.to.2018.2d <-  count.1999.to.2018.2d + tc.occ.avg[,,it]
-    }    
-
-#count annual occurance of TC 
-tc.ave.occ.2d <- count.1999.to.2018.2d / as.numeric(length(yr.id))
-tc.ave.occ.2d[tc.ave.occ.2d<=0.1] <- 0
-tc.ave.occ.2d[tc.ave.occ.2d>=6.0] <- 6.0
-} #lf_ld_go
-
-#copy information to arr.for.plot 
-arr.for.plot <- tc.ave.occ.2d 
-
-#load("TC_return_frq_1945to2019_7D.rda")
-#sum up all arraies in ann.land.frq 
-# sum up TC occurence 
-#for ( it in yr.id ) { 
-#print(paste("working on file:",it,"for 7D") )
-#      count.1999.to.2019.7d <-  count.1999.to.2019.7d + ann.land.frq[,,it]
-#    }    
-#count annual occurance of TC 
-#tc.ave.occ.7d <- count.1999.to.2019.7d / as.numeric(length(yr.id))
-#tc.ave.occ.7d[tc.ave.occ.5d<=0.01] <- 0
-
-
-
-#load forest cover type 
-
-# 2. ESA land cover map from 2015, the domain shold be also matched the LAI map over WP region
-
+# load forest cover type 
+# ESA land cover map from 2015, the domain shold be also matched the LAI map over WP region
 load(paste("/lfs/home/ychen/LAI_STUDY_EAsia/LANDCOVER_DATA/2015.esa.landcover.east.asia.rda",sep=""))
 # variable name: esa.lc
 # group the types to croplands(type 1), forests(type 2), others(type 3)
@@ -137,7 +71,6 @@ esa.lc[ (esa.lc >= 10)  & (esa.lc <= 40 ) ] <- 1
 esa.lc[ (esa.lc >= 50)  & (esa.lc <= 120) ] <- 2
 #esa.lc[ (esa.lc == 160) | (esa.lc == 170) ] <- 2
 esa.lc[ (esa.lc > 2) ]  <- 3
-
 # create the LC mask
 lc.mask <- esa.lc
 # agricuture mask
@@ -154,79 +87,160 @@ lc.oth.mask[lc.mask!=3] <- NA
 lc.oth.mask[lc.mask==3] <- 1
 
 
+#load the TC occurence
+yr.id <- seq(1999, 2018,1) - 1999 + 1
 
+run.name <- c("5D_14_120_1999_2018_.rda", "5D_0_120_1999_2018_.rda", "5D_14_0_1999_2018_.rda",
+              "4D_12_100_1999_2018_.rda", "4D_0_100_1999_2018_.rda", "4D_12_0_1999_2018_.rda",
+              "3D_10_80_1999_2018_.rda", "3D_0_80_1999_2018_.rda", "3D_10_0_1999_2018_.rda",
+              "2D_8_60_1999_2018_.rda", "2D_0_60_1999_2018_.rda", "2D_8_0_1999_2018_.rda")
+              
+ led.txt <- c("5D-co","5D-rf","5D-w", 
+              "4D-co","4D-rf","4D-w",
+              "3D-co","3D-rf","3D-w",
+              "2D-co","2D-rf","2D-w")
+               
+
+run.col <- c("tan3","tan3","tan3",
+            "forestgreen","forestgreen","forestgreen",
+            "blue","blue","blue",
+            "black","black","black")
+             
+
+run.lty <- rep(c(1,5,3),4)  
+#
+nruns = 12
+
+#load the TC Rda data
+ld_go <- F
+if (ld_go) {
 # calculate the latitude band 
+lat.band.runs <- array(0, dim=c(60,nruns) )
+tot.aff.runs <- array(0, dim=c(20,nruns) ) 
+for (irun in 1:nruns) {
+#load the data for iruns
+load( file=run.name[irun] )
+#decleare array for counting the occurence
+count.1999.to.2018 <- array( 0., dim=c(6722,6722)) 
+tmp.arr <- array(0, dim=c(6722,6722))
+#sum up all arraies in ann.land.frq 
+#sum up TC occurence 
+for ( it in 1:20 ) { 
+      print(paste("working on year:",it+1999-1) )
+      count.1999.to.2018 <-  count.1999.to.2018 + tc.occ.avg[,,it]
+    
+      #calculate the total area
+      #skip longitude <100E
+      tmp.arr <- tc.occ.avg[,,it]*lc.for.mask
+      x.id1 = 1  #90E
+      x.id2 = 1200 #100E
+      tmp.arr [x.id1:x.id2,] <- 0
+      #skip logitude <130E & latitude > 45
+      x.id1 =1; x.id2 = 1200*3
+      y.id1 =1; y.id2 = 1200*1.5 
+      tmp.arr[x.id1:x.id2,y.id1:y.id2]  <- 0
+      #only calculate 10N to 40 N
+      y.id1= 1200*2
+      y.id2= 6722-1200
+      tmp.arr[,1:y.id1] <- 0
+      tmp.arr[,y.id2:6722] <- 0
+      #count numbers
+      tmp.arr[tmp.arr >= 0.1] <- 1
+      tmp.arr[tmp.arr < 0.1] <- 0
+      #plot(tmp.arr)
+      #
+      tot.aff.runs[it,irun] <- sum(tmp.arr,na.rm=T) 
+}    
 
-lat.band.for.2d <- array(0, dim=c(60) )
-lat.band.for.3d <- array(0, dim=c(60) )
-lat.band.for.4d <- array(0, dim=c(60) )
+#count annual occurance of TC 
+tc.ave.occ <- count.1999.to.2018 / as.numeric(length(yr.id))
+tc.ave.occ[tc.ave.occ<=0.1] <- 0
+tc.ave.occ[tc.ave.occ>=6.0] <- 6.0
+
+#skip longitude <100E
+x.id1 = 1  #90E
+x.id2 = 1200 #100E
+tc.ave.occ[x.id1:x.id2,] <- 0
+#skip logitude <130E & latitude > 45
+x.id1 =1; x.id2 = 1200*3
+y.id1 =1; y.id2 = 1200*1.5 
+tc.ave.occ[x.id1:x.id2,y.id1:y.id2] <- 0
+# 
+
+#copy information to arr.for.plot and accumulate
+arr.for.plot <- tc.ave.occ + arr.for.plot 
+
 
 
 #find the array index which the same latitude zone
+tc.ave.occ[tc.ave.occ >= 0.1] <- 1
+tc.ave.occ[tc.ave.occ < 0.1] <- 0
 
-tc.ave.occ.2d[tc.ave.occ.2d >= 0.1] <- 1
-tc.ave.occ.2d[tc.ave.occ.2d < 0.1] <- 0
-
-#tc.ave.occ.3d[tc.ave.occ.3d >= 0.05] <- 1
-#tc.ave.occ.3d[tc.ave.occ.3d < 0.05] <- 0
-
-#tc.ave.occ.5d[tc.ave.occ.5d >= 0.05] <- 1
-#tc.ave.occ.5d[tc.ave.occ.5d < 0.05] <- 0
-
-#tc.ave.occ.7d[tc.ave.occ.7d >= 0.05] <- 1
-#tc.ave.occ.7d[tc.ave.occ.7d < 0.05] <- 0
-
-
+# calculate the latitude zonal band 
 for ( iy in 1:60 ) {
 
-  y1 <- (iy-1)
+  y1 <- (iy)-1
   y2 <- (iy)
   y.id <- which( (lai$lat >= y1) &  (lai$lat < y2) )
+  #  lat.band calculation for irun: 
+  lat.band.runs[iy,irun] <- sum( lc.for.mask[,y.id]*tc.ave.occ[,y.id], na.rm=T   )
   
-#  lat.band.for[iy] <- sum(lc.for.mask[,y.id],  na.rm=T) 
-  lat.band.for.2d[iy] <- sum( lc.for.mask[,y.id]*tc.ave.occ.2d[,y.id], na.rm=T   )
-#  lat.band.for.2d[iy] <- sum( lc.for.mask[,y.id]*tc.ave.occ.2d[,y.id], na.rm=T   )
-#  lat.band.for.3d[iy] <- sum( lc.for.mask[,y.id]*tc.ave.occ.3d[,y.id], na.rm=T   )
-#  lat.band.for.5d[iy] <- sum( lc.for.mask[,y.id]*tc.ave.occ.5d[,y.id], na.rm=T   )
-#  lat.band.for.7d[iy] <- sum( lc.for.mask[,y.id]*tc.ave.occ.7d[,y.id], na.rm=T   )
-  
-}#end for 
- par(mar=c(5,6,5,2))
-  
- plot(y=seq(1,60,1), x=lat.band.for.2d, type="l",col="black",lty="dotdash",lwd=1,
-      xlab="Potentail Affected area (km^2)", ylab="Latitude", cex.lab=1.5, xlim=c(0,5e+5) )
-# lines(y=seq(1,60,1), x=lat.band.for.1d, col="orange",lty="solid",lwd=3)
-# lines(y=seq(1,60,1), x=lat.band.for.3d, col="black",lty="dashed",lwd=1)
-# lines(y=seq(1,60,1), x=lat.band.for.2d, col="black",lty="dotted",lwd=1)
- 
-# legend("bottomright", inset=0.08, title="Along Track Diameter",lwd=c(3,1,1,1),
-#        c("1D","2D","3D","5D"), lty=c("solid","dotted","dashed","dotdash"),
-#        col=c("orange","black","black","black"),horiz=TRUE, cex=0.8)
+}#end of iy 
 
-dev.new()
+}#end of iruns
 
-obj.go <- TRUE
+#average the arr.for.plot
+arr.for.plot <- arr.for.plot/as.numeric(nruns)
+
+}#end of ld_go
+
+run.lwd <- rep( c(1.,1.,1.),4)
+
+obj.go <- T
 if (obj.go) {
+  pdf(file="TC_Occ_Fig1.pdf",width=8, height=8)
   library(raster)
   #convert array to raster
-  
-  land.frq.raster <-  raster( x=t(arr.for.plot*lc.for.mask), 
+  # set a layout for spactail TC occurenc (a), latitudal mean (b), time series plot (c). 
+  #layoutsetting for combine plot 
+   land.frq.raster <-  raster( x=t(arr.for.plot*lc.for.mask), 
                               xmn=lai$lon[1],  xmx=lai$lon[nx],
                               ymn=lai$lat[ny], ymx=lai$lat[1], 
                               crs=CRS("+proj=longlat +datum=WGS84"))
-  par(mar=c(5,6,5,2))
-  ##assign the color palette
-  #my.color<- rev(colorRampPalette(c(terrain.colors(27),"lightgray" ))(28))
-  #my.breaks<- seq(1,100,length.out = 100)
- # my.color<- colorRampPalette(c("lightgray","orange","yellow","forestgreen","forestgreen"))(49)
-  my.color<- colorRampPalette(c("lightgray","blue","cyan","green","yellow","red","red"))(13)
+# 
+  par(oma = c(0.1, 0.1, 0.1, 0.1),mgp=c(2.5,1,0))
+# par(cex=0.7, mai=c(0.1,0.1,0.2,0.1))
+  #layout( matrix(c(3,2,1,1), nrow=2, ncol=2, byrow = TRUE), width=c(1,1),height=c(1,1) )
+  #op = par(no.readonly = TRUE)
+#plot (a) spatial distribution map of TC Occ.
+  my.color<- colorRampPalette(c("gray","blue","cyan","green","yellow","red","red"))(13)
   my.breaks<- round(seq(0, 6.0, length.out = 13), digits=1)
-  plot(land.frq.raster, ylim=c(0,60),xlim=c(90,150), legend=TRUE,
-         col=my.color,breaks=my.breaks, 
-       xlab="Longitude", ylab="Latitude", cex.lab=1.5, cex.main=2.0,
-       main=paste("Annual TC Occurence ",sep="") )
-  plot(coastlines, add=T,lwd=2)
-  #load track data for specific event 
+  # set subplot margin
+  par(fig=c(0.0,0.7,0.2,1.0), mar = c(4, 4.5, 1.5 ,0.1), usr=c(90,150,0,60)) #no buffer in x-y axis 
+  plot(coastlines,col="white",lwd=0,ylim=c(0,60),xlim=c(90,150))
+  par(fig=c(0.0,0.7,0.2,1.0), mar = c(4, 4.5, 1.5 ,0.1), usr=c(90,150,0,60)) #no buffer in x-y axis 
+  plot(land.frq.raster,  legend=FALSE,ylim=c(0,60),xlim=c(90,150),
+         col=my.color,breaks=my.breaks, box=T, 
+       xlab="Longitude", ylab="Latitude", cex.lab=1., cex.main=2.0,
+       main=paste("",sep=""),add=T )
+  #plot legend 
+  par(fig=c(0.0,0.7,0.2,1.0), mar = c(4, 4.5, 1.5 ,0.1), usr=c(90,150,0,60)) #no buffer in x-y axis 
+  plot(land.frq.raster, legend.only=TRUE,ylim=c(0,60),xlim=c(90,150), col=my.color,breaks=my.breaks, 
+       smallplot=c(0.22,.23, 0.55, 0.8), add=T,
+       axis.args=list(cex.axis=0.8), 
+       legend.args=list(text= expression("TC Occurrence (" * yr^-1 * ")") ,side=2, line=.1, cex=0.8) )
+
+  #add coastaline
+  par(fig=c(0.0,0.7,0.2,1.0), mar = c(4, 4.5, 1.5 ,0.1), usr=c(90,150,0,60), xpd=FALSE)  
+  plot(coastlines, lwd=0.5,ylim=c(0,60),xlim=c(90,150),add=T  )
+  text(x=93,y=57, label="a",cex=1.2, font=2)  
+  box()
+  axis(side = 2, at = seq(0,60,length.out=7), 
+       labels = c("","10","20","30","40","50","60"), tck = -0.02)
+  mtext("Latitude" , side=2, line=2, cex=1.2) 
+  #add load track data for specific event 
+  ld_go <- T
+  if (ld_go) {
   #Morakot 2009
   track.tmp <- read.csv(file="/lfs/home/ychen/LAI_STUDY_EAsia/TRACK_DATA/bwp2009/bwp092009.txt",
                               sep=",", header=FALSE,colClasses = "character" )[,1:9] # only import the 1:9 columns
@@ -234,8 +248,8 @@ if (obj.go) {
   # seperate text and numbers
   track.tmp$LatNS <- as.numeric( gsub("[^[:digit:]]","",track.tmp$LatNS) )/10.
   track.tmp$LonEW <- as.numeric( gsub("[^[:digit:]]","",track.tmp$LonEW) )/10.
-  lines(y=track.tmp$LatNS, x=track.tmp$LonEW,pch=21,lty="dashed",lwd=1.5)
-  text(y=track.tmp$LatNS[1], x=track.tmp$LonEW[1], "Morakot (2009)",cex=0.8)
+  lines(y=track.tmp$LatNS, x=track.tmp$LonEW,pch=21,lty="dotdash",lwd=.8)
+  text(y=track.tmp$LatNS[1]+4, x=track.tmp$LonEW[1]+5, "Morakot (2009)",cex=0.8)
   #Megi 2010
   track.tmp <- read.csv(file="/lfs/home/ychen/LAI_STUDY_EAsia/TRACK_DATA/bwp2010/bwp152010.txt",
                               sep=",", header=FALSE,colClasses = "character" )[,1:9] # only import the 1:9 columns
@@ -243,8 +257,8 @@ if (obj.go) {
   # seperate text and numbers
   track.tmp$LatNS <- as.numeric( gsub("[^[:digit:]]","",track.tmp$LatNS) )/10.
   track.tmp$LonEW <- as.numeric( gsub("[^[:digit:]]","",track.tmp$LonEW) )/10.
-  lines(y=track.tmp$LatNS, x=track.tmp$LonEW,pch=21,lty="dashed",lwd=1.5)
-  text(y=track.tmp$LatNS[1], x=track.tmp$LonEW[1], "Megi (2010)",cex=0.8)
+  lines(y=track.tmp$LatNS, x=track.tmp$LonEW,pch=21,lty="dotdash",lwd=.8)
+  text(y=track.tmp$LatNS[1]-2, x=track.tmp$LonEW[1]-2, "Megi (2010)",cex=0.8)
   #Haiyan 2013
   track.tmp <- read.csv(file="/lfs/home/ychen/LAI_STUDY_EAsia/TRACK_DATA/bwp2013/bwp312013.dat",
                               sep=",", header=FALSE,colClasses = "character" )[,1:9] # only import the 1:9 columns
@@ -252,7 +266,7 @@ if (obj.go) {
   # seperate text and numbers
   track.tmp$LatNS <- as.numeric( gsub("[^[:digit:]]","",track.tmp$LatNS) )/10.
   track.tmp$LonEW <- as.numeric( gsub("[^[:digit:]]","",track.tmp$LonEW) )/10.
-  lines(y=track.tmp$LatNS, x=track.tmp$LonEW,pch=21,lty="dashed",lwd=1.5)
+  lines(y=track.tmp$LatNS[track.tmp$LonEW<=145], x=track.tmp$LonEW[track.tmp$LonEW<=145],pch=21,lty="dotdash",lwd=.8)
   text(y=5.0, x=140, "Haiyan (2013)",cex=0.8)
   #Meigi 2016
   track.tmp <- read.csv(file="/lfs/home/ychen/LAI_STUDY_EAsia/TRACK_DATA/bwp2016/bwp202016.dat",
@@ -261,20 +275,54 @@ if (obj.go) {
   # seperate text and numbers
   track.tmp$LatNS <- as.numeric( gsub("[^[:digit:]]","",track.tmp$LatNS) )/10.
   track.tmp$LonEW <- as.numeric( gsub("[^[:digit:]]","",track.tmp$LonEW) )/10.
-  lines(y=track.tmp$LatNS, x=track.tmp$LonEW,pch=21,lty="dashed",lwd=1.5)
-  text(y= 15, x=145,"Meigi (2016)",cex=0.8)
+  lines(y=track.tmp$LatNS, x=track.tmp$LonEW,pch=21,lty="dotdash",lwd=.8)
+  text(y= 17, x=140,"Meigi (2016)",cex=0.8)
+  }
+#plot(c) time series 
+  par(fig=c(0.0,1.0,0.0,0.3),new=T)
+  par(mar = c(3, 4.5, 0.2 , 1), xaxs = "i", yaxs = "i",  mgp=c(2.5, 1, 0))
+  plot(x=seq(1999,2018,1),y=tot.aff.runs[,1],ylim=c(0,2e+6),type="n",cex.lab=1.,
+       xaxt="n",yaxt="n",xlab="",ylab="",xlim=c(1998,2021))
+ #xlab="Year", ylab=expression("TC Disturbed Area (" * km^2 *")") ) 
+  axis(side = 1, at = c("2000","2005","2010","2015","2020"), 
+      labels = c("2000","2005","2010","2015","2020"), tck = -0.05)
+  mtext("Year", side=1, line=2, cex=1.2) 
+  axis(side = 2, at = seq(0,2e+6,length.out=5), 
+     labels = c("0","0.5","1","1.5","2"), tck = -0.05)
+  #mtext( "Affected Area" , side=2, line=2, cex=1.) 
+  mtext( expression("Affected Area (" * M.km^2 * yr^-1 * ")") , side=2, line=2, cex=1., adj=1) #adj 0 for left alignment 
+ 
+ #add more runs 
+  for (irun in 1:nruns) {
+      lines(x=seq(1999,2018,1), y=tot.aff.runs[,irun], col=run.col[irun],lty=run.lty[irun],lwd=run.lwd[irun])
+  }
+  text(x=1998.5,y=1.8e+6,labels="c",cex=1.2, font=2) #font=2 for font "face" bold
 
+#plot (b) latidual mean 
+  par(fig=c(0.7,1.0,0.3,1.0),new=T)
+  par(mar = c(0.02, 0.2, 1.5 , 1),mgp=c(3,1,0))
+  plot(y=seq(1,60,1), x=lat.band.runs[,1], type="l",col="white",lty="solid",lwd=1.,
+      xlab="", ylab="",
+      xaxt = "n", yaxt="n", xlim=c(0,5e+5),ylim=c(0,60))
+  #add axis
+  axis(side = 2, at = seq(0,60,length.out=7), labels = FALSE, tck = -0.05)
+  par(mgp=c(0,-1.5,0))
+  axis(side = 1, at = seq(0,4e+5,length.out=5),cex=0.5, 
+       labels = c("","0.1","0.2","0.3","0.4"), tck = +0.05)
+  #mtext( "Affected Area", side=1, line=-2.5, cex=1.0 ) 
+  mtext( expression("Affected Area (" * M.km^2 * yr^-1 * ") "), side=1, line=-2.5, cex=0.8) #adj 0 for left alignment ffecteci
+ 
+  #add gray area from 10 to 40 N 
+   usr <- par('usr')
+   rect(usr[1], 10, usr[2], 40, col="gray95", border=NA ) 
+  # add 12 runs 
+  for (irun in 1:nruns) {  
+      lines(y=seq(1,60,1), x=lat.band.runs[,irun], col=run.col[irun],lty=run.lty[irun],lwd=run.lwd[irun])
+  } 
+  # legend("right", inset=0.08, title="", bty = "n", bg=NA,
+  #      legend=led.txt, lwd=run.lwd, lty=run.lty, col=run.col, horiz=FALSE, cex=0.8)
+   box() 
+   text(x=0.6e+5,y=57, labels="b",cex=1.2, font=2)
 
-  #plot(track.mask.raster, col = ifelse(!is.na(track.mask.raster), "red", "white"), add=T)
-  #plot(track.mask.raster, col = ifelse(!is.na(track.mask.raster), "red", "white"), add=T)
-  #plot(coastlines, add=T)
-  # add path line by each event
-  #for (ieve in 1:nevents) {
-  #    #plot the lines
-  #    lines ( y=tc.track$LatNS[as.integer(tc.track$CY)==ieve],
-  ##	    x=tc.track$LonEW[as.integer(tc.track$CY)==ieve],
-  #	    col="gray",lwd=0.1,lty="longdash" )
-  #}
-  #points(y=tc.track$LatNS,x=tc.track$LonEW,cex=0.2, pch=1,col="red")
-  
+  dev.off()
 } # end of obj.go

@@ -112,7 +112,7 @@ run.lty <- rep(c(1,5,3),4)
 nruns = 12
 
 #load the TC Rda data
-ld_go <- F
+ld_go <- T
 if (ld_go) {
 # calculate the latitude band 
 lat.band.runs <- array(0, dim=c(60,nruns) )
@@ -145,8 +145,8 @@ for ( it in 1:20 ) {
       tmp.arr[,1:y.id1] <- 0
       tmp.arr[,y.id2:6722] <- 0
       #count numbers
-      tmp.arr[tmp.arr >= 0.1] <- 1
-      tmp.arr[tmp.arr < 0.1] <- 0
+      tmp.arr[tmp.arr > 0.1] <- 1
+      tmp.arr[tmp.arr <= 0.1] <- 0
       #plot(tmp.arr)
       #
       tot.aff.runs[it,irun] <- sum(tmp.arr,na.rm=T) 
@@ -155,7 +155,7 @@ for ( it in 1:20 ) {
 #count annual occurance of TC 
 tc.ave.occ <- count.1999.to.2018 / as.numeric(length(yr.id))
 tc.ave.occ[tc.ave.occ<=0.1] <- 0
-tc.ave.occ[tc.ave.occ>=6.0] <- 6.0
+tc.ave.occ[tc.ave.occ>=5.0] <- 5.0
 
 #skip longitude <100E
 x.id1 = 1  #90E
@@ -173,14 +173,14 @@ arr.for.plot <- tc.ave.occ + arr.for.plot
 
 
 #find the array index which the same latitude zone
-tc.ave.occ[tc.ave.occ >= 0.1] <- 1
-tc.ave.occ[tc.ave.occ < 0.1] <- 0
+tc.ave.occ[tc.ave.occ > 0.1] <- 1
+tc.ave.occ[tc.ave.occ <= 0.1] <- 0
 
 # calculate the latitude zonal band 
 for ( iy in 1:60 ) {
 
-  y1 <- (iy)-1
-  y2 <- (iy)
+  y1 <- (iy)
+  y2 <- (iy)+1
   y.id <- which( (lai$lat >= y1) &  (lai$lat < y2) )
   #  lat.band calculation for irun: 
   lat.band.runs[iy,irun] <- sum( lc.for.mask[,y.id]*tc.ave.occ[,y.id], na.rm=T   )
@@ -212,9 +212,14 @@ if (obj.go) {
 # par(cex=0.7, mai=c(0.1,0.1,0.2,0.1))
   #layout( matrix(c(3,2,1,1), nrow=2, ncol=2, byrow = TRUE), width=c(1,1),height=c(1,1) )
   #op = par(no.readonly = TRUE)
-#plot (a) spatial distribution map of TC Occ.
-  my.color<- colorRampPalette(c("gray","blue","cyan","green","yellow","red","red"))(13)
-  my.breaks<- round(seq(0, 6.0, length.out = 13), digits=1)
+
+arr.for.plot[arr.for.plot>=5] <- 5
+#subplot (a) left: spatial distribution map of TC Occ.
+  my.color<- colorRampPalette(c("gray","cornflowerblue","blue","cyan","limegreen","yellow","red","red"))(13)
+#  my.breaks<- round(seq(0, 6.0, length.out = 13), digits=1)
+  my.breaks<- c(0,0.05,0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0,5.5)
+  my.breaks.txt<- c("","0.05","0.5","1.0","1.5","2.0","2.5","3.0","3.5","4.0","4.5","5.0",">5")
+ 
   # set subplot margin
   par(fig=c(0.0,0.7,0.2,1.0), mar = c(4, 4.5, 1.5 ,0.1), usr=c(90,150,0,60)) #no buffer in x-y axis 
   plot(coastlines,col="white",lwd=0,ylim=c(0,60),xlim=c(90,150))
@@ -227,17 +232,21 @@ if (obj.go) {
   par(fig=c(0.0,0.7,0.2,1.0), mar = c(4, 4.5, 1.5 ,0.1), usr=c(90,150,0,60)) #no buffer in x-y axis 
   plot(land.frq.raster, legend.only=TRUE,ylim=c(0,60),xlim=c(90,150), col=my.color,breaks=my.breaks, 
        smallplot=c(0.22,.23, 0.55, 0.8), add=T,
-       axis.args=list(cex.axis=0.8), 
+       axis.args=list(at=my.breaks, labels=my.breaks.txt, cex.axis=0.8),
        legend.args=list(text= expression("TC Occurrence (" * yr^-1 * ")") ,side=2, line=.1, cex=0.8) )
 
   #add coastaline
   par(fig=c(0.0,0.7,0.2,1.0), mar = c(4, 4.5, 1.5 ,0.1), usr=c(90,150,0,60), xpd=FALSE)  
-  plot(coastlines, lwd=0.5,ylim=c(0,60),xlim=c(90,150),add=T  )
+  plot(coastlines, lwd=0.8,ylim=c(0,60),xlim=c(90,150),add=T  )
   text(x=93,y=57, label="a",cex=1.2, font=2)  
   box()
   axis(side = 2, at = seq(0,60,length.out=7), 
-       labels = c("","10","20","30","40","50","60"), tck = -0.02)
-  mtext("Latitude" , side=2, line=2, cex=1.2) 
+       labels = c("0","10","20","30","40","50","60"), tck = -0.02)
+  mtext("Latitude" , side=2, line=2, cex=1.0) 
+
+  axis(side = 1, at = seq(90,150,length.out=7), 
+       labels = c("","100","110","120","130","140",""), tck = -0.02)
+  mtext("Longitude" , side=1, line=2, cex=1.0) 
   #add load track data for specific event 
   ld_go <- T
   if (ld_go) {
@@ -278,51 +287,51 @@ if (obj.go) {
   lines(y=track.tmp$LatNS, x=track.tmp$LonEW,pch=21,lty="dotdash",lwd=.8)
   text(y= 17, x=140,"Meigi (2016)",cex=0.8)
   }
-#plot(c) time series 
-  par(fig=c(0.0,1.0,0.0,0.3),new=T)
-  par(mar = c(3, 4.5, 0.2 , 1), xaxs = "i", yaxs = "i",  mgp=c(2.5, 1, 0))
-  plot(x=seq(1999,2018,1),y=tot.aff.runs[,1],ylim=c(0,2e+6),type="n",cex.lab=1.,
-       xaxt="n",yaxt="n",xlab="",ylab="",xlim=c(1998,2021))
- #xlab="Year", ylab=expression("TC Disturbed Area (" * km^2 *")") ) 
-  axis(side = 1, at = c("2000","2005","2010","2015","2020"), 
-      labels = c("2000","2005","2010","2015","2020"), tck = -0.05)
-  mtext("Year", side=1, line=2, cex=1.2) 
-  axis(side = 2, at = seq(0,2e+6,length.out=5), 
-     labels = c("0","0.5","1","1.5","2"), tck = -0.05)
-  #mtext( "Affected Area" , side=2, line=2, cex=1.) 
-  mtext( expression("Affected Area (" * M.km^2 * yr^-1 * ")") , side=2, line=2, cex=1., adj=1) #adj 0 for left alignment 
- 
- #add more runs 
-  for (irun in 1:nruns) {
-      lines(x=seq(1999,2018,1), y=tot.aff.runs[,irun], col=run.col[irun],lty=run.lty[irun],lwd=run.lwd[irun])
-  }
-  text(x=1998.5,y=1.8e+6,labels="c",cex=1.2, font=2) #font=2 for font "face" bold
 
-#plot (b) latidual mean 
-  par(fig=c(0.7,1.0,0.3,1.0),new=T)
-  par(mar = c(0.02, 0.2, 1.5 , 1),mgp=c(3,1,0))
+#plot (a) right: latidual mean 
+  par(fig=c(0.72,1.0,0.3,1.0),new=T)
+  par(mar = c(0.02, 0.2, 1.5 , 1),mgp=c(3,1,0), xaxs = "i", yaxs = "i")
   plot(y=seq(1,60,1), x=lat.band.runs[,1], type="l",col="white",lty="solid",lwd=1.,
-      xlab="", ylab="",
-      xaxt = "n", yaxt="n", xlim=c(0,5e+5),ylim=c(0,60))
+      xlab="", ylab="",bty="n",
+      xaxt = "n", yaxt="n", xlim=c(0,2.0e+5),ylim=c(0,60))
   #add axis
   axis(side = 2, at = seq(0,60,length.out=7), labels = FALSE, tck = -0.05)
-  par(mgp=c(0,-1.5,0))
-  axis(side = 1, at = seq(0,4e+5,length.out=5),cex=0.5, 
-       labels = c("","0.1","0.2","0.3","0.4"), tck = +0.05)
+  par(mgp=c(0,1.0,0))
+  axis(side = 1, at = seq(0,2.0e+5,length.out=5),cex=0.5, 
+       labels = c("0","5","10","15","20"), tck = -0.05)
   #mtext( "Affected Area", side=1, line=-2.5, cex=1.0 ) 
-  mtext( expression("Affected Area (" * M.km^2 * yr^-1 * ") "), side=1, line=-2.5, cex=0.8) #adj 0 for left alignment ffecteci
- 
+  mtext( expression("Affected Area (" * Mha^2 * yr^-1 * deg^-1 * ") "), side=1, line=2.5, cex=1.0) #adj 0 for left alignment ffecteci
   #add gray area from 10 to 40 N 
    usr <- par('usr')
-   rect(usr[1], 10, usr[2], 40, col="gray95", border=NA ) 
+   rect(usr[1]+2e+3, 10, usr[2]+2e+3, 40, col="gray95", border=NA ) 
   # add 12 runs 
   for (irun in 1:nruns) {  
       lines(y=seq(1,60,1), x=lat.band.runs[,irun], col=run.col[irun],lty=run.lty[irun],lwd=run.lwd[irun])
   } 
   # legend("right", inset=0.08, title="", bty = "n", bg=NA,
   #      legend=led.txt, lwd=run.lwd, lty=run.lty, col=run.col, horiz=FALSE, cex=0.8)
-   box() 
-   text(x=0.6e+5,y=57, labels="b",cex=1.2, font=2)
+  #text(x=0.6e+5,y=57, labels="",cex=1.2, font=2)
+  box()
+ 
+#plot(b) time series 
+  par(fig=c(0.0,1.0,0.0,0.25),new=T)
+  par(mar = c(3, 4.5, 0.2 , 1), xaxs = "i", yaxs = "i",  mgp=c(2.5, 1, 0))
+  plot(x=seq(1999,2018,1),y=tot.aff.runs[,1],ylim=c(0,2e+6),type="n",cex.lab=1., bty="n",
+       xaxt="n",yaxt="n",xlab="",ylab="",xlim=c(1998,2021))
+ #xlab="Year", ylab=expression("TC Disturbed Area (" * km^2 *")") ) 
+  axis(side = 1, at = c("2000","2005","2010","2015","2020"), 
+      labels = c("2000","2005","2010","2015","2020"), tck = -0.05)
+  mtext("Year", side=1, line=2, cex=1.) 
+  axis(side = 2, at = seq(0,2e+6,length.out=5), 
+     labels = c("0","50","100","150","200"), tck = -0.05)
+  #mtext( "Affected Area" , side=2, line=2, cex=1.) 
+  mtext( expression("Affected Area (" * Mha^2 * yr^-1 * ")") , side=2, line=2, cex=1.) #adj 0 for left alignment 
+ 
+ #add more runs 
+  for (irun in 1:nruns) {
+      lines(x=seq(1999,2018,1), y=tot.aff.runs[,irun], col=run.col[irun],lty=run.lty[irun],lwd=run.lwd[irun])
+  }
+  text(x=1998.5,y=1.8e+6,labels="b",cex=1.2, font=2) #font=2 for font "face" bold
 
-  dev.off()
+ dev.off()
 } # end of obj.go
